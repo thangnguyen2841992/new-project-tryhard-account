@@ -1,6 +1,7 @@
 package com.regain.accountservicemaven.service;
 
 import com.regain.accountservicemaven.model.Account;
+import com.regain.accountservicemaven.model.dto.AccountDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface IAccountService {
     Account save(Account account);
 
     Account update(Account account);
+
+    String register(AccountDTO accountDTO);
 
     void delete(Long id);
 

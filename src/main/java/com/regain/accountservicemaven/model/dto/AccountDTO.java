@@ -1,17 +1,6 @@
-package com.regain.accountservicemaven.model;
+package com.regain.accountservicemaven.model.dto;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.Date;
-import java.util.Set;
-
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor
-public class Account {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AccountDTO {
     private Long id;
 
     private String firstName;
@@ -20,14 +9,9 @@ public class Account {
 
     private String fullName;
 
-    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(unique = true, nullable = false)
     private String phone;
-
-    @Column(unique = true, nullable = false)
-    private String username;
 
     private String address;
 
@@ -39,39 +23,15 @@ public class Account {
 
     private String password;
 
-    private Date birthDate;
+    private String confirmPassword;
+
+    private String birthDate;
 
     private String jobTitle;
 
+    private String[] roles;
+
     private String avatar;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "account_role")
-    private Set<Role> roles;
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public Long getId() {
         return id;
@@ -161,11 +121,19 @@ public class Account {
         this.password = password;
     }
 
-    public Date getBirthDate() {
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
@@ -175,5 +143,21 @@ public class Account {
 
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
+    }
+
+    public String[] getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String[] roles) {
+        this.roles = roles;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }
