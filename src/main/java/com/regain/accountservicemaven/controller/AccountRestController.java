@@ -45,11 +45,17 @@ public class AccountRestController {
         messageDTO.setFrom("nguyenthang29tbdl@gmail.com");
         messageDTO.setTo(registerForm.getEmail()); //username is Email
         messageDTO.setToName(registerForm.getFirstName() + " " + registerForm.getLastName());
-        messageDTO.setSubject("Chào mừng bạn đến với Thắng đẹp trai");
-        messageDTO.setContent("Cho tôi 10 tỷ nhé");
+        messageDTO.setSubject("Chào Mừng Bạn Đến Với Website");
+        messageDTO.setContent("Bạn hãy click vào link dưới để xác thực tài khoản nhé:");
 
         notificationClient.sendNotificationEmail(messageDTO);
         return new ResponseEntity<>(resultRegister, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/activeAccount")
+    public ResponseEntity<Account> activeAccount(@RequestBody LoginForm loginForm) {
+        Account account =  this.accountService.activeAccount(loginForm);
+        return new ResponseEntity<>(account, HttpStatus.OK);
     }
     @PostMapping("/loginAccount")
     public ResponseEntity<?> loginAccount(@RequestBody LoginForm loginForm) {

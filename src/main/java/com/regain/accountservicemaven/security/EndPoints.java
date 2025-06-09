@@ -14,7 +14,8 @@ public class EndPoints {
     };
     public static final String[] PUBLIC_POST_ENDPOINTS = {
             "/account/createNewAccount",
-            "/account/loginAccount"
+            "/account/loginAccount",
+            "/account/activeAccount"
     };
     public static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",

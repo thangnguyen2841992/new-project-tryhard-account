@@ -24,4 +24,6 @@ public interface IAccountService extends UserDetailsService {
 
     void delete(Long id);
 
+    Account activeAccount(LoginForm email);
+
 }

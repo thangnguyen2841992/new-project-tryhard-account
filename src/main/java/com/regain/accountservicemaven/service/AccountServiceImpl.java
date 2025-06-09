@@ -87,6 +87,7 @@ public class AccountServiceImpl implements IAccountService {
             account.setAvatar(registerForm.getAvatar());
             account.setPhone(registerForm.getPhone());
             account.setAddress(registerForm.getAddress());
+            account.setActive(false);
 
             account.setJobTitle(registerForm.getJobTitle());
             account.setGender(registerForm.getGender());
@@ -128,6 +129,13 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public void delete(Long id) {
         this.accountRepository.deleteById(id);
+    }
+
+    @Override
+    public Account activeAccount(LoginForm email) {
+        Account account = this.accountRepository.findByEmail(email.getEmail()).orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email: " + email));
+        account.setActive(true);
+        return account;
     }
 
     @Override
