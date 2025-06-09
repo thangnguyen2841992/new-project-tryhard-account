@@ -95,8 +95,8 @@ public class JwtService {
 
     // Kiểm tra tính hợp lệ
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String tenDangNhap = extractUsername(token);
-        System.out.println(tenDangNhap);
-        return (tenDangNhap.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final String username = extractUsername(token);
+        System.out.println(username);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }

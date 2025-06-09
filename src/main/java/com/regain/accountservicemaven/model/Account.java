@@ -45,6 +45,8 @@ public class Account {
 
     private String avatar;
 
+    private boolean isActive;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "account_role")
     private Set<RoleAccount> roleAccounts;
@@ -176,4 +178,8 @@ public class Account {
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
     }
+
+    public boolean isActive() {return isActive;}
+
+    public void setActive(boolean active) {isActive = active;}
 }

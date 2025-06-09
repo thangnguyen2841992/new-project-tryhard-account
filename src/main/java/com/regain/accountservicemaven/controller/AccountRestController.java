@@ -1,8 +1,10 @@
 package com.regain.accountservicemaven.controller;
 
+import com.regain.accountservicemaven.client.INotificationClient;
 import com.regain.accountservicemaven.model.Account;
 import com.regain.accountservicemaven.model.dto.AccountDTO;
 import com.regain.accountservicemaven.model.dto.LoginForm;
+import com.regain.accountservicemaven.model.dto.MessageDTO;
 import com.regain.accountservicemaven.model.dto.RegisterForm;
 import com.regain.accountservicemaven.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,9 @@ public class AccountRestController {
 
     @Autowired
     private IAccountService accountService;
+
+    @Autowired
+    private INotificationClient  notificationClient;
 
     @GetMapping("/findAllAccount")
     public ResponseEntity<List<Account>> findAllAccount() {
@@ -35,6 +41,14 @@ public class AccountRestController {
     @PostMapping("/createNewAccount")
     public ResponseEntity<String> createAccount(@RequestBody RegisterForm registerForm) {
         String resultRegister = this.accountService.register(registerForm);
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setFrom("nguyenthang29tbdl@gmail.com");
+        messageDTO.setTo(registerForm.getEmail()); //username is Email
+        messageDTO.setToName(registerForm.getFirstName() + " " + registerForm.getLastName());
+        messageDTO.setSubject("Chào mừng bạn đến với Thắng đẹp trai");
+        messageDTO.setContent("Cho tôi 10 tỷ nhé");
+
+        notificationClient.sendNotificationEmail(messageDTO);
         return new ResponseEntity<>(resultRegister, HttpStatus.CREATED);
     }
     @PostMapping("/loginAccount")
@@ -63,4 +77,5 @@ public class AccountRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
 }
