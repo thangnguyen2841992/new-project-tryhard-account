@@ -1,12 +1,14 @@
 package com.regain.accountservicemaven.controller;
 
 import com.regain.accountservicemaven.model.Account;
+import com.regain.accountservicemaven.model.dto.AccountDTO;
+import com.regain.accountservicemaven.model.dto.LoginForm;
+import com.regain.accountservicemaven.model.dto.RegisterForm;
 import com.regain.accountservicemaven.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.PostExchange;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +33,13 @@ public class AccountRestController {
     }
 
     @PostMapping("/createNewAccount")
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
-        Account accountRegister = this.accountService.save(account);
-        return new ResponseEntity<>(accountRegister, HttpStatus.CREATED);
+    public ResponseEntity<String> createAccount(@RequestBody RegisterForm registerForm) {
+        String resultRegister = this.accountService.register(registerForm);
+        return new ResponseEntity<>(resultRegister, HttpStatus.CREATED);
+    }
+    @PostMapping("/loginAccount")
+    public ResponseEntity<?> loginAccount(@RequestBody LoginForm loginForm) {
+        return this.accountService.login(loginForm);
     }
 
     @PutMapping("/updateAccount")
@@ -42,7 +48,7 @@ public class AccountRestController {
         if (accountOptional.isPresent()) {
             Account accountUpdate = this.accountService.save(account);
             return new ResponseEntity<>(accountUpdate, HttpStatus.OK);
-        }else {
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

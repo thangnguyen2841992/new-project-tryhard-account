@@ -1,23 +1,43 @@
 package com.regain.accountservicemaven.service;
 
 import com.regain.accountservicemaven.model.Account;
-import com.regain.accountservicemaven.model.Role;
-import com.regain.accountservicemaven.model.dto.AccountDTO;
+import com.regain.accountservicemaven.model.RoleAccount;
+import com.regain.accountservicemaven.model.dto.JwtResponse;
+import com.regain.accountservicemaven.model.dto.LoginForm;
+import com.regain.accountservicemaven.model.dto.RegisterForm;
 import com.regain.accountservicemaven.repository.IAccountRepository;
+import com.regain.accountservicemaven.repository.IRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements IAccountService {
     @Autowired
     private IAccountRepository accountRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private IRoleRepository roleRepository;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtService jwtService;
 
 
     @Override
@@ -41,43 +61,92 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public String register(AccountDTO accountDTO) {
-        if (!accountDTO.getConfirmPassword().equals(accountDTO.getPassword())) {
+    public String register(RegisterForm registerForm) {
+        if (!registerForm.getConfirmPassword().equals(registerForm.getPassword())) {
             return "Password do not match";
-        }else {
+        } else {
+            if (registerForm.getRoles().length == 0) {
+                return "Roles is not Empty";
+            }
             Account account = new Account();
-            account.setFirstName(accountDTO.getFirstName());
-            account.setLastName(accountDTO.getLastName());
-            account.setEmail(accountDTO.getEmail());
-            account.setPassword(passwordEncoder.encode(accountDTO.getPassword()));
-            account.setCity(accountDTO.getCity());
-            account.setCountry(accountDTO.getCountry());
-            account.setAvatar(accountDTO.getAvatar());
-            account.setPhone(accountDTO.getPhone());
-            account.setAddress(accountDTO.getAddress());
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
             try {
-                Date birthDate = formatter.parse(accountDTO.getBirthDate());
+                Date birthDate = formatter.parse(registerForm.getBirthDate());
                 account.setBirthDate(birthDate);
             } catch (ParseException e) {
                 return "Invalid birthday";
             }
-            account.setJobTitle(accountDTO.getJobTitle());
-            account.setGender(accountDTO.getGender());
-            account.setFullName(accountDTO.getFirstName() + " " + accountDTO.getLastName());
+            account.setFirstName(registerForm.getFirstName());
+            account.setLastName(registerForm.getLastName());
+            String username = getUserNameByEmail(registerForm.getEmail());
+            account.setUsername(username);
+            account.setEmail(registerForm.getEmail());
+            account.setPassword(passwordEncoder.encode(registerForm.getPassword()));
+            account.setCity(registerForm.getCity());
+            account.setCountry(registerForm.getCountry());
+            account.setAvatar(registerForm.getAvatar());
+            account.setPhone(registerForm.getPhone());
+            account.setAddress(registerForm.getAddress());
 
-            Set<Role> roles = new HashSet<>();
-            for (int i = 0; i < accountDTO.getRoles().length; i++) {
-                Optional<Role> roleOptional = this.roleRepository.findByName(userDTO.getRole()[i]);
-                roleOptional.ifPresent(role -> roles.add(new Role(role.getRoleId(), role.getRoleName())));
+            account.setJobTitle(registerForm.getJobTitle());
+            account.setGender(registerForm.getGender());
+            account.setFullName(registerForm.getFirstName() + " " + registerForm.getLastName());
+
+
+            Set<RoleAccount> roleAccounts = new HashSet<>();
+            for (int i = 0; i < registerForm.getRoles().length; i++) {
+                Optional<RoleAccount> roleOptional = this.roleRepository.findRoleAccountByRoleNameContaining(registerForm.getRoles()[i]);
+                roleOptional.ifPresent(roleAccount -> {
+                    roleAccounts.add(new RoleAccount(roleAccount.getRoleId(), roleAccount.getRoleName()));
+                });
             }
-            account.setRoles(roles);
+            account.setRoleAccounts(roleAccounts);
+            this.accountRepository.save(account);
         }
-        return null;
+        return "Create account successes!";
     }
+
+    public ResponseEntity<?> login(LoginForm form) {
+        // Xác thực người dùng bằng tên đăng nhập và mật khẩu
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(form.getEmail(), form.getPassword())
+            );
+            // Nếu xác thực thành công, tạo token JWT
+            if (authentication.isAuthenticated()) {
+                final String jwt = jwtService.generateToken(form.getEmail());
+                return ResponseEntity.ok(new JwtResponse(jwt));
+            }
+        } catch (AuthenticationException e) {
+            // Xác thực không thành công, trả về lỗi hoặc thông báo
+            return ResponseEntity.badRequest().body("Tên đăng nhập hặc mật khẩu không chính xác.");
+        }
+        return ResponseEntity.badRequest().body("Xác thực không thành công.");
+    }
+
 
     @Override
     public void delete(Long id) {
         this.accountRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Account> accountOptional = this.accountRepository.findByEmail(email);
+        Account account = accountOptional.get();
+        return new User(account.getEmail(), account.getPassword(), rolesToAuthorities(account.getRoleAccounts()));
+    }
+
+    private Collection<? extends GrantedAuthority> rolesToAuthorities(Collection<RoleAccount> roles) {
+        return roles.stream().map(role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList());
+    }
+
+    private String getUserNameByEmail(String email) {
+        int index = email.indexOf("@");
+        if (index != -1) {
+           return email.substring(0, index);
+        } else {
+            return "Email invalid";
+        }
     }
 }

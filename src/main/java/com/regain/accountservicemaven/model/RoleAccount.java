@@ -8,15 +8,22 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-public class Role {
+public class RoleAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roleId;
 
     private String roleName;
+
+    public RoleAccount() {
+
+    }
+
+    public RoleAccount(Long roleId, String roleName) {
+        this.roleId = roleId;
+        this.roleName = roleName;
+    }
 
     public Long getRoleId() {
         return roleId;

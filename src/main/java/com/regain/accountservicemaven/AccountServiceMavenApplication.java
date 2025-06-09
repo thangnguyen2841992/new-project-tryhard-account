@@ -13,9 +13,6 @@ public class AccountServiceMavenApplication {
         SpringApplication.run(AccountServiceMavenApplication.class, args);
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() { //bean mã hóa pass
-        return new BCryptPasswordEncoder();
-    }
+
 
 }
