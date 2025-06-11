@@ -14,4 +14,7 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 
   @Query(value = "SELECT * FROM account WHERE email = :email", nativeQuery = true)
   Optional<Account> findByEmail(@Param("email") String email);
+
+  boolean existsByEmail(String email);
+  boolean existsByPhone(String phone);
 }

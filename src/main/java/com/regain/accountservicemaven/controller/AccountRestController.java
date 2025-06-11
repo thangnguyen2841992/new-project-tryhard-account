@@ -4,6 +4,7 @@ import com.regain.accountservicemaven.model.Account;
 import com.regain.accountservicemaven.model.dto.LoginForm;
 import com.regain.accountservicemaven.model.dto.MessageDTO;
 import com.regain.accountservicemaven.model.dto.RegisterForm;
+import com.regain.accountservicemaven.repository.IAccountRepository;
 import com.regain.accountservicemaven.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class AccountRestController {
 
     @Autowired
     KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Autowired
+    private IAccountRepository accountRepository;
 
     @GetMapping("/findAllAccount")
     public ResponseEntity<List<Account>> findAllAccount() {
@@ -52,10 +56,17 @@ public class AccountRestController {
         this.accountService.activeAccount(email, activeCode);
     }
 
-//    @PostMapping("/checkExistEmail")
-//    public AccountDTO checkExistEmail(@RequestParam(name = "email") String email) {
-//
-//    }
+    @PostMapping("/checkExistEmail")
+    public ResponseEntity<Boolean> checkExistEmail(@RequestParam(name = "email") String email) {
+        boolean isExistEmail = this.accountRepository.existsByEmail(email);
+        return new ResponseEntity<>(isExistEmail, HttpStatus.OK);
+    }
+
+    @PostMapping("/checkExistPhone")
+    public ResponseEntity<Boolean> checkExistPhone(@RequestParam(name = "phone") String phone) {
+        boolean isExistPhone= this.accountRepository.existsByPhone(phone);
+        return new ResponseEntity<>(isExistPhone, HttpStatus.OK);
+    }
 
     @PostMapping("/loginAccount")
     public ResponseEntity<?> loginAccount(@RequestBody LoginForm loginForm) {
