@@ -1,8 +1,6 @@
 package com.regain.accountservicemaven.controller;
 
-import com.regain.accountservicemaven.client.INotificationClient;
 import com.regain.accountservicemaven.model.Account;
-import com.regain.accountservicemaven.model.dto.AccountDTO;
 import com.regain.accountservicemaven.model.dto.LoginForm;
 import com.regain.accountservicemaven.model.dto.MessageDTO;
 import com.regain.accountservicemaven.model.dto.RegisterForm;
@@ -10,9 +8,9 @@ import com.regain.accountservicemaven.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +22,7 @@ public class AccountRestController {
     private IAccountService accountService;
 
     @Autowired
-    private INotificationClient  notificationClient;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     @GetMapping("/findAllAccount")
     public ResponseEntity<List<Account>> findAllAccount() {
@@ -39,24 +37,26 @@ public class AccountRestController {
     }
 
     @PostMapping("/createNewAccount")
-    public ResponseEntity<String> createAccount(@RequestBody RegisterForm registerForm) {
-        String resultRegister = this.accountService.register(registerForm);
+    public ResponseEntity<Account> createAccount(@RequestBody RegisterForm registerForm) {
+        Account account = this.accountService.register(registerForm);
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setFrom("nguyenthang29tbdl@gmail.com");
         messageDTO.setTo(registerForm.getEmail()); //username is Email
-        messageDTO.setToName(registerForm.getFirstName() + " " + registerForm.getLastName());
-        messageDTO.setSubject("Chào Mừng Bạn Đến Với Website");
-        messageDTO.setContent("Bạn hãy click vào link dưới để xác thực tài khoản nhé:");
-
-        notificationClient.sendNotificationEmail(messageDTO);
-        return new ResponseEntity<>(resultRegister, HttpStatus.CREATED);
+        messageDTO.setActiveCode(account.getCodeActive());
+        kafkaTemplate.send("send-email-active", messageDTO);
+        return new ResponseEntity<>(account, HttpStatus.CREATED);
     }
 
     @PostMapping("/activeAccount")
-    public ResponseEntity<Account> activeAccount(@RequestBody LoginForm loginForm) {
-        Account account =  this.accountService.activeAccount(loginForm);
-        return new ResponseEntity<>(account, HttpStatus.OK);
+    public void activeAccount(@RequestParam(name = "email") String email, @RequestParam(name = "activeCode") String activeCode) {
+        this.accountService.activeAccount(email, activeCode);
     }
+
+//    @PostMapping("/checkExistEmail")
+//    public AccountDTO checkExistEmail(@RequestParam(name = "email") String email) {
+//
+//    }
+
     @PostMapping("/loginAccount")
     public ResponseEntity<?> loginAccount(@RequestBody LoginForm loginForm) {
         return this.accountService.login(loginForm);

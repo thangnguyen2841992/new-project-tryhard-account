@@ -19,11 +19,11 @@ public interface IAccountService extends UserDetailsService {
 
     Account update(Account account);
 
-    String register(RegisterForm registerForm);
+    Account register(RegisterForm registerForm);
     ResponseEntity<?> login(LoginForm loginForm);
 
     void delete(Long id);
 
-    Account activeAccount(LoginForm email);
+    void activeAccount(String email, String activeCode);
 
 }

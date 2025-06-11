@@ -49,7 +49,7 @@ public class Config {
         http.cors(cors -> {
             cors.configurationSource(request -> {
                 CorsConfiguration corsConfig = new CorsConfiguration();
-                corsConfig.addAllowedOrigin("*");
+                corsConfig.addAllowedOrigin(EndPoints.FRONT_END_HOST);
                 corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                 corsConfig.addAllowedHeader("*");
                 return corsConfig;

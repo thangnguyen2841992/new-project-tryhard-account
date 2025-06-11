@@ -8,6 +8,7 @@ import com.regain.accountservicemaven.model.dto.RegisterForm;
 import com.regain.accountservicemaven.repository.IAccountRepository;
 import com.regain.accountservicemaven.repository.IRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,12 +62,12 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public String register(RegisterForm registerForm) {
+    public Account register(RegisterForm registerForm) {
         if (!registerForm.getConfirmPassword().equals(registerForm.getPassword())) {
-            return "Password do not match";
+            throw new RuntimeException("Password do not match");
         } else {
             if (registerForm.getRoles().length == 0) {
-                return "Roles is not Empty";
+                throw new RuntimeException("Roles is not Empty");
             }
             Account account = new Account();
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -74,7 +75,7 @@ public class AccountServiceImpl implements IAccountService {
                 Date birthDate = formatter.parse(registerForm.getBirthDate());
                 account.setBirthDate(birthDate);
             } catch (ParseException e) {
-                return "Invalid birthday";
+                throw new RuntimeException("Invalid birthday");
             }
             account.setFirstName(registerForm.getFirstName());
             account.setLastName(registerForm.getLastName());
@@ -87,6 +88,7 @@ public class AccountServiceImpl implements IAccountService {
             account.setAvatar(registerForm.getAvatar());
             account.setPhone(registerForm.getPhone());
             account.setAddress(registerForm.getAddress());
+            account.setCodeActive(createActiveCode());
             account.setActive(false);
 
             account.setJobTitle(registerForm.getJobTitle());
@@ -102,10 +104,14 @@ public class AccountServiceImpl implements IAccountService {
                 });
             }
             account.setRoleAccounts(roleAccounts);
-            this.accountRepository.save(account);
+            return this.accountRepository.save(account);
         }
-        return "Create account successes!";
     }
+
+    private String createActiveCode() {
+        return UUID.randomUUID().toString();
+    }
+
 
     public ResponseEntity<?> login(LoginForm form) {
         // Xác thực người dùng bằng tên đăng nhập và mật khẩu
@@ -132,10 +138,23 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public Account activeAccount(LoginForm email) {
-        Account account = this.accountRepository.findByEmail(email.getEmail()).orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email: " + email));
-        account.setActive(true);
-        return account;
+    public void activeAccount(String email, String activeCode) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        if (account.isPresent()) {
+            if (account.get().isActive()) {
+                new ResponseEntity<>("account activated!", HttpStatus.BAD_REQUEST);
+            } else {
+                if (account.get().getCodeActive().equals(activeCode)) {
+                    account.get().setActive(true);
+                    accountRepository.save(account.get());
+                    new ResponseEntity<>("account active successes!", HttpStatus.OK);
+                } else {
+                    new ResponseEntity<>("active code is not corrected!", HttpStatus.BAD_REQUEST);
+                }
+            }
+        } else {
+            new ResponseEntity<>("Not found account", HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
@@ -152,7 +171,7 @@ public class AccountServiceImpl implements IAccountService {
     private String getUserNameByEmail(String email) {
         int index = email.indexOf("@");
         if (index != -1) {
-           return email.substring(0, index);
+            return email.substring(0, index);
         } else {
             return "Email invalid";
         }

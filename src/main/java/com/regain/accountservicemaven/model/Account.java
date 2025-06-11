@@ -45,6 +45,8 @@ public class Account {
 
     private String avatar;
 
+    private String codeActive;
+
     private boolean isActive;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -182,4 +184,8 @@ public class Account {
     public boolean isActive() {return isActive;}
 
     public void setActive(boolean active) {isActive = active;}
+
+    public String getCodeActive() {return codeActive;}
+
+    public void setCodeActive(String codeActive) {this.codeActive = codeActive;}
 }
