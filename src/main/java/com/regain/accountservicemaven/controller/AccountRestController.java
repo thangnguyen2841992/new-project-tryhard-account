@@ -47,6 +47,7 @@ public class AccountRestController {
         messageDTO.setFrom("nguyenthang29tbdl@gmail.com");
         messageDTO.setTo(registerForm.getEmail()); //username is Email
         messageDTO.setActiveCode(account.getCodeActive());
+        messageDTO.setToName(registerForm.getFirstName() + " " +registerForm.getLastName());
         kafkaTemplate.send("send-email-active", messageDTO);
         return new ResponseEntity<>(account, HttpStatus.CREATED);
     }
@@ -56,13 +57,13 @@ public class AccountRestController {
         this.accountService.activeAccount(email, activeCode);
     }
 
-    @PostMapping("/checkExistEmail")
+    @GetMapping("/checkExistEmail")
     public ResponseEntity<Boolean> checkExistEmail(@RequestParam(name = "email") String email) {
         boolean isExistEmail = this.accountRepository.existsByEmail(email);
         return new ResponseEntity<>(isExistEmail, HttpStatus.OK);
     }
 
-    @PostMapping("/checkExistPhone")
+    @GetMapping("/checkExistPhone")
     public ResponseEntity<Boolean> checkExistPhone(@RequestParam(name = "phone") String phone) {
         boolean isExistPhone= this.accountRepository.existsByPhone(phone);
         return new ResponseEntity<>(isExistPhone, HttpStatus.OK);
