@@ -70,7 +70,7 @@ public class AccountServiceImpl implements IAccountService {
                 throw new RuntimeException("Roles is not Empty");
             }
             Account account = new Account();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
             try {
                 Date birthDate = formatter.parse(registerForm.getBirthDate());
                 account.setBirthDate(birthDate);
