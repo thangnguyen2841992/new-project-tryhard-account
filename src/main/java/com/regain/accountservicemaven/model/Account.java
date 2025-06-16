@@ -43,6 +43,8 @@ public class Account {
 
     private String jobTitle;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String avatar;
 
     private String codeActive;

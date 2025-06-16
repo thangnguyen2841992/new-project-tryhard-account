@@ -42,7 +42,7 @@ public class JwtService {
                 }
             }
         }
-
+        claims.put("accountId", account.getId());
         claims.put("isAdmin", isAdmin);
         claims.put("isUser", isUser);
         claims.put("fullName", fullName);

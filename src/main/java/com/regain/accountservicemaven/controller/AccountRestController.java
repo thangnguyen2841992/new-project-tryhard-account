@@ -1,6 +1,7 @@
 package com.regain.accountservicemaven.controller;
 
 import com.regain.accountservicemaven.model.Account;
+import com.regain.accountservicemaven.model.dto.AccountDTO;
 import com.regain.accountservicemaven.model.dto.LoginForm;
 import com.regain.accountservicemaven.model.dto.MessageDTO;
 import com.regain.accountservicemaven.model.dto.RegisterForm;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,14 +36,14 @@ public class AccountRestController {
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 
-    @GetMapping("/findAccountById")
-    public ResponseEntity<Account> findAccountById(Long id) {
-        Optional<Account> account = accountService.findById(id);
-        return account.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @GetMapping("/findAccountByAccountId/{accountId}")
+    public ResponseEntity<AccountDTO> findAccountById(@PathVariable Long accountId) {
+        AccountDTO accountDTO = this.accountService.findAccountByAccountId(accountId);
+        return new ResponseEntity<>(accountDTO, HttpStatus.OK);
     }
 
     @PostMapping("/createNewAccount")
-    public ResponseEntity<Account> createAccount(@RequestBody RegisterForm registerForm) {
+    public ResponseEntity<Account> createAccount(@RequestBody RegisterForm registerForm) throws IOException {
         Account account = this.accountService.register(registerForm);
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setFrom("nguyenthang29tbdl@gmail.com");

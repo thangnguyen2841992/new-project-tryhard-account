@@ -2,11 +2,13 @@ package com.regain.accountservicemaven.service;
 
 import com.regain.accountservicemaven.model.Account;
 import com.regain.accountservicemaven.model.RoleAccount;
+import com.regain.accountservicemaven.model.dto.AccountDTO;
 import com.regain.accountservicemaven.model.dto.JwtResponse;
 import com.regain.accountservicemaven.model.dto.LoginForm;
 import com.regain.accountservicemaven.model.dto.RegisterForm;
 import com.regain.accountservicemaven.repository.IAccountRepository;
 import com.regain.accountservicemaven.repository.IRoleRepository;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -62,7 +67,7 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public Account register(RegisterForm registerForm) {
+    public Account register(RegisterForm registerForm) throws IOException {
         if (!registerForm.getConfirmPassword().equals(registerForm.getPassword())) {
             throw new RuntimeException("Password do not match");
         } else {
@@ -89,6 +94,7 @@ public class AccountServiceImpl implements IAccountService {
             account.setPhone(registerForm.getPhone());
             account.setAddress(registerForm.getAddress());
             account.setCodeActive(createActiveCode());
+            account.setAvatar(imageToBase64("C:/Users/nguye/OneDrive/Desktop/Data/avatar.png"));
             account.setActive(false);
 
             account.setJobTitle(registerForm.getJobTitle());
@@ -158,6 +164,25 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
+    public AccountDTO findAccountByAccountId(Long accountId) {
+        Account account = this.accountRepository.findById(accountId).orElseThrow(() -> new RuntimeException("Not found account: " + accountId));
+       AccountDTO accountDTO = new AccountDTO();
+       accountDTO.setId(account.getId());
+       accountDTO.setFirstName(account.getFirstName());
+       accountDTO.setLastName(account.getLastName());
+       accountDTO.setFullName(account.getFullName());
+       accountDTO.setEmail(account.getEmail());
+       accountDTO.setPassword(account.getPassword());
+       accountDTO.setCity(account.getCity());
+       accountDTO.setCountry(account.getCountry());
+       accountDTO.setAvatar(account.getAvatar());
+       accountDTO.setPhone(account.getPhone());
+       accountDTO.setUsername(account.getUsername());
+       accountDTO.setAddress(account.getAddress());
+       return accountDTO;
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Account> accountOptional = this.accountRepository.findByEmail(email);
         Account account = accountOptional.get();
@@ -175,5 +200,17 @@ public class AccountServiceImpl implements IAccountService {
         } else {
             return "Email invalid";
         }
+    }
+
+    public String imageToBase64(String imagePath) throws IOException {
+        File f = new File(imagePath);
+        FileInputStream fin = new FileInputStream(f);
+        byte[] imageByteArr = new byte[(int) f.length()];
+        fin.read(imageByteArr);
+        String imageToBase64 = "data:image/jpeg;base64,";
+        imageToBase64 += Base64.encodeBase64String(imageByteArr);
+
+        fin.close();
+        return imageToBase64;
     }
 }

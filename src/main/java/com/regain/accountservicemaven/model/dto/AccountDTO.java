@@ -4,6 +4,7 @@ public class AccountDTO {
     private Long id;
 
     private String firstName;
+    private String username;
 
     private String lastName;
 
@@ -159,5 +160,13 @@ public class AccountDTO {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
