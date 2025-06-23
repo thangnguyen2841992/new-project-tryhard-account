@@ -94,7 +94,7 @@ public class AccountServiceImpl implements IAccountService {
             account.setPhone(registerForm.getPhone());
             account.setAddress(registerForm.getAddress());
             account.setCodeActive(createActiveCode());
-            account.setAvatar(imageToBase64("C:/Users/nguye/OneDrive/Desktop/Data/avatar.png"));
+            account.setAvatar(imageToBase64("C:/Users/Admin/Desktop/Data/avatar.jpg"));
             account.setActive(false);
 
             account.setJobTitle(registerForm.getJobTitle());
