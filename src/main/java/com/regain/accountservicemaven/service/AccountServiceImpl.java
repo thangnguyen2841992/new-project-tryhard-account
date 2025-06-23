@@ -75,7 +75,8 @@ public class AccountServiceImpl implements IAccountService {
                 throw new RuntimeException("Roles is not Empty");
             }
             Account account = new Account();
-            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+//            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date birthDate = formatter.parse(registerForm.getBirthDate());
                 account.setBirthDate(birthDate);
@@ -94,7 +95,7 @@ public class AccountServiceImpl implements IAccountService {
             account.setPhone(registerForm.getPhone());
             account.setAddress(registerForm.getAddress());
             account.setCodeActive(createActiveCode());
-            account.setAvatar(imageToBase64("C:/Users/Admin/Desktop/Data/avatar.jpg"));
+            account.setAvatar("https://firebasestorage.googleapis.com/v0/b/thangdeptrai-9efec.appspot.com/o/images%2F293152416_586744886309092_690567344764305395_n.jpg?alt=media&token=1c6ef82a-ae9a-4950-93c2-a20fbc0ff7c7");
             account.setActive(false);
 
             account.setJobTitle(registerForm.getJobTitle());
